@@ -6,30 +6,38 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DijkstrasTest {
-    private List<Vertex> vertices;
-    private List<Edge> edges;
+    private static List<Vertex> vertices;
+    private static List<Edge> edges;
+    private static Graph graph;
+    private static List<Vertex> expectedShortestPath;
+
     private Dijkstras dijkstras;
+
+    @BeforeClass
+    public static void createGraph() {
+        vertices = getVertices();
+        edges = getEdges();
+        graph = new Graph(vertices, edges);
+        expectedShortestPath = new ArrayList<>();
+        expectedShortestPath.add(vertices.get(0));
+        expectedShortestPath.add(vertices.get(2));
+        expectedShortestPath.add(vertices.get(3));
+        expectedShortestPath.add(vertices.get(6));
+        expectedShortestPath.add(vertices.get(8));
+    }
 
     @Test
     public void findsShortestPath() {
-        vertices = getVertices();
-        edges = getEdges();
-        Graph graph = new Graph(vertices, edges);
         dijkstras = new Dijkstras(graph);
         dijkstras.execute(vertices.get(0));
-        List<Vertex> expected = new ArrayList<>();
-        expected.add(vertices.get(0));
-        expected.add(vertices.get(2));
-        expected.add(vertices.get(3));
-        expected.add(vertices.get(6));
-        expected.add(vertices.get(8));
-        assertThat(dijkstras.getShortestPath(vertices.get(8)), is(expected));
+        assertThat(dijkstras.getShortestPath(vertices.get(8)), is(expectedShortestPath));
     }
 
-    private List<Vertex> getVertices() {
+    private static List<Vertex> getVertices() {
         List<Vertex> vertices = new ArrayList<>();
         for (int i = 0; i < 9; i++) {
             vertices.add(new Vertex(Integer.toString(i), String.format("Vertex_%s", i)));
@@ -37,7 +45,7 @@ public class DijkstrasTest {
         return vertices;
     }
 
-    private List<Edge> getEdges() {
+    private static List<Edge> getEdges() {
         List<Edge> edges = new ArrayList<>();
         edges.add(getEdge("0", 0, 1, 5));
         edges.add(getEdge("1", 0, 2, 3));
@@ -69,7 +77,7 @@ public class DijkstrasTest {
         return edges;
     }
 
-    private Edge getEdge(String edgeId, int source, int destination, int weight) {
+    private static Edge getEdge(String edgeId, int source, int destination, int weight) {
         return new Edge(edgeId, vertices.get(source), vertices.get(destination), weight);
     }
 }

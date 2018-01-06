@@ -1,20 +1,31 @@
 package com.algorythm.graphs;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.PriorityQueue;
 
 public class Dijkstras {
 
+
+    private class Node {
+        public Vertex vertex;
+        public int distanceFromSource;
+
+        public Node(Vertex vertex, int distanceFromSource) {
+            this.vertex = vertex;
+            this.distanceFromSource = distanceFromSource;
+        }
+    }
+
     private final List<Vertex> vertices;
     private final List<Edge> edges;
-    private Map<Vertex, Integer> distances;
+    private PriorityQueue<Node> queue;
     private Map<Vertex, Vertex> previous;
-    private Set<Vertex> remaining;
+    private Map<Vertex, Integer> distances;
 
     public Dijkstras(Graph graph) {
         vertices = new ArrayList<>(graph.vertices);
@@ -22,17 +33,16 @@ public class Dijkstras {
     }
 
     public void execute(Vertex source) {
-        distances = new HashMap<>();
+        queue = new PriorityQueue<>(Comparator.comparingInt(node -> node.distanceFromSource));
         previous = new HashMap<>();
-        remaining = new HashSet<>();
+        distances = new HashMap<>();
 
         distances.put(source, 0);
-        remaining.add(source);
+        queue.add(new Node(source, 0));
 
-        while(remaining.size() > 0) {
-            Vertex vertex = getMinimum(remaining);
+        while(!queue.isEmpty()) {
+            Vertex vertex = queue.remove().vertex;
             updateDistances(vertex);
-            remaining.remove(vertex);
         }
     }
 
@@ -56,8 +66,8 @@ public class Dijkstras {
             int distanceThroughVertex = getShortestDistanceFromSource(vertex) + getWeight(vertex, neighbor);
             if(getShortestDistanceFromSource(neighbor) > distanceThroughVertex) {
                 distances.put(neighbor, distanceThroughVertex);
+                queue.add(new Node(neighbor, distanceThroughVertex));
                 previous.put(neighbor, vertex);
-                remaining.add(neighbor);
             }
         }
     }
@@ -81,19 +91,8 @@ public class Dijkstras {
         return neighbors;
     }
 
-    private Vertex getMinimum(Set<Vertex> remaining) {
-        Vertex min = null;
-        for(Vertex vertex : remaining) {
-            if(vertex == null) {
-                min = vertex;
-            } else if(getShortestDistanceFromSource(vertex) < getShortestDistanceFromSource(min)) {
-                min = vertex;
-            }
-        }
-        return min;
-    }
-
     private int getShortestDistanceFromSource(Vertex destination) {
         return distances.getOrDefault(destination, Integer.MAX_VALUE);
     }
+
 }
