@@ -1,15 +1,15 @@
 package com.algorythm.graphs;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 public class Dijkstras {
-
 
     private class Node {
         public Vertex vertex;
@@ -21,15 +21,21 @@ public class Dijkstras {
         }
     }
 
-    private final List<Vertex> vertices;
-    private final List<Edge> edges;
+    // source vertex -> Map < neighbor vertex, distance from source vertex >
+    private Map<Vertex, Map<Vertex, Integer>> graph;
     private PriorityQueue<Node> queue;
     private Map<Vertex, Vertex> previous;
     private Map<Vertex, Integer> distances;
 
+
     public Dijkstras(Graph graph) {
-        vertices = new ArrayList<>(graph.vertices);
-        edges = new ArrayList<>(graph.edges);
+        this.graph = new HashMap<>();
+
+        for(Edge edge : graph.edges) {
+            Map<Vertex, Integer> neighborDistance = this.graph.getOrDefault(edge.source, new HashMap<>());
+            neighborDistance.put(edge.destination, edge.weight);
+            this.graph.put(edge.source, neighborDistance);
+        }
     }
 
     public void execute(Vertex source) {
@@ -61,8 +67,7 @@ public class Dijkstras {
     }
 
     private void updateDistances(Vertex vertex) {
-        List<Vertex> neighbors = getNeighbors(vertex);
-        for(Vertex neighbor : neighbors) {
+        for(Vertex neighbor : getNeighbors(vertex)) {
             int distanceThroughVertex = getShortestDistanceFromSource(vertex) + getWeight(vertex, neighbor);
             if(getShortestDistanceFromSource(neighbor) > distanceThroughVertex) {
                 distances.put(neighbor, distanceThroughVertex);
@@ -73,22 +78,11 @@ public class Dijkstras {
     }
 
     private int getWeight(Vertex source, Vertex destination) {
-        for(Edge edge : edges) {
-            if(edge.source.equals(source) && edge.destination.equals(destination)) {
-                return edge.weight;
-            }
-        }
-        throw new RuntimeException("Edge not found: Should not happen!");
+        return graph.get(source).get(destination);
     }
 
-    private List<Vertex> getNeighbors(Vertex vertex) {
-        List<Vertex> neighbors = new ArrayList<>();
-        for(Edge edge : edges) {
-            if(edge.source.equals(vertex)) {
-                neighbors.add(edge.destination);
-            }
-        }
-        return neighbors;
+    private Set<Vertex> getNeighbors(Vertex vertex) {
+        return graph.containsKey(vertex) ? graph.get(vertex).keySet() : new HashSet<>();
     }
 
     private int getShortestDistanceFromSource(Vertex destination) {
